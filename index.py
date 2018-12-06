@@ -8,19 +8,21 @@ outputDataset = np.empty((0, 3), int)
 with open('./data/campur.json') as f:
     data = json.load(f)
 
+with open('./data/campurBig.json') as f2:
+    data_test = json.load(f2)
+
 for i in range(len(data)):
     inputDataset = np.append(inputDataset, np.array([data[i]["input"]]), axis=0)
     outputDataset = np.append(outputDataset, np.array([data[i]["output"]]), axis=0)
 
 # params :
-epoch = 10000
+epoch = 20000
 target_error = 0.0013
-inputLen = 625 #atau inputDataset.shape[1]
-neurons = 16
-outputLen = 3 #atau outputDataset.shape[1]
+neurons = 20
+inputLen = 625      #atau inputDataset.shape[1]
+outputLen = 3       #atau outputDataset.shape[1]
 weight1 = 2 * np.random.random((inputLen, neurons)) - 1 
 weight2 = 2 * np.random.random((neurons, outputLen)) - 1
-
 
 # activation func :
 def sigmoid(x):
@@ -47,7 +49,7 @@ def propagate():
     delta2 = outputError * grad_sigmoid(outputLayer)
     hiddenError = delta2.dot(weight2.T)
     delta1 = hiddenError * grad_sigmoid(hiddenLayer)
-    print ("Err:" + str(rms()))
+    #print ("Err: " + str(rms()) + "Iter: " + str(i))
 
 def adjust_weight():
     global weight2, weight1
@@ -66,6 +68,7 @@ def trainer():
     while i < epoch:
         feed_forward(inputDataset)
         propagate()
+        print ("Err: " + str(rms()) + ", Iter: " + str(i))
         adjust_weight()
         if error_rms < target_error:
             break
@@ -80,7 +83,7 @@ def main():
     # Training :
     trainer()
     # test / predict:
-    predict(data[2]["input"], data[2]["output"])
+    predict(data_test[2]["input"], data_test[2]["output"])
 
 if __name__ == "__main__":
     main()
