@@ -2,7 +2,7 @@ import json
 import numpy as np
 
 # input dataset :
-with open('./data/campur.json') as f:
+with open('./data/campurBig.json') as f:
     data = json.load(f)
 
 inputDataset = np.empty((0,625), int)
@@ -15,15 +15,16 @@ for i in range(len(data)):
 # inisialisasi weight random dari -1 ke 1 :
 inputShape = inputDataset.shape    # tuple baris, kolom
 outputShape = outputDataset.shape
+neuron = 2
 """
 print("inputShape")
 print(inputShape)
 print("outputShape")
 print(outputShape)
 """
-weight1 = 2 * np.random.random((inputShape[1], inputShape[0])) - 1 
-weight3 = 2 * np.random.random((outputShape[0], 3)) - 1
-weight2 = 2 * np.random.random((18, 18)) - 1
+weight1 = 2 * np.random.random((625, neuron)) - 1 
+weight2 = 2 * np.random.random((neuron, neuron)) - 1
+weight3 = 2 * np.random.random((neuron, 3)) - 1
 """
 print("weight1")
 print(weight1.shape)
@@ -37,7 +38,7 @@ def sigmoid(x, d):
     elif d == False:
         return 1/(1+np.exp(-x))
 
-epoch = 100000
+epoch = 1000000
 
 for j in range(epoch):
     # feed forward

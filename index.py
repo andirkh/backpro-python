@@ -16,45 +16,74 @@ for i in range(len(data)):
     outputDataset = np.append(outputDataset, np.array([data[i]["output"]]), axis=0)
 
 # params :
+alpha= 0.25
 epoch = 20000
 target_error = 0.0013
-neurons = 20
+neurons = 16
 inputLen = 625      #atau inputDataset.shape[1]
 outputLen = 3       #atau outputDataset.shape[1]
-weight1 = 2 * np.random.random((inputLen, neurons)) - 1 
-weight2 = 2 * np.random.random((neurons, outputLen)) - 1
+
+weight1 = np.random.uniform(-1, 1, (inputLen, neurons))
+weight2 = np.random.uniform(-1, 1, (neurons, outputLen))
 
 # activation func :
 def sigmoid(x):
     return 1/(1+np.exp(-x))
 
-def grad_sigmoid(x):
+def dSigmoid(x):
     return x * (1 -x)
 
+def relu(x):
+    return np.maximum(x,0)
+
+def dRelu(x):
+    x[x<=0] = 0
+    x[x>0] = 1
+    return x
+
+# cost function
 def rms():
     global error_rms
     error_rms = np.sqrt(np.mean(np.square(outputError)))
-    return error_rms 
+    return error_rms
 
-def feed_forward(data):
+def mae():
+    global error_mae
+    error_mae = np.mean(np.abs(outputError))
+    return error_mae
+"""
+def loss_func():
+    global loss
+    loss = np.square(outputError)/2
+    return loss
+"""
+# forward
+def activate(data):
     global inputLayer, hiddenLayer, outputLayer
     
     inputLayer = data
     hiddenLayer = sigmoid(np.dot(inputLayer, weight1))
     outputLayer = sigmoid(np.dot(hiddenLayer, weight2))
 
+# back
 def propagate():
-    global outputError, delta2, hiddenError, delta1
+    global outputError, delta2, hiddenError, delta1, chain1, chain2
+    #loss_func = np.square(Target - Prediction)/2
     outputError = outputDataset - outputLayer
-    delta2 = outputError * grad_sigmoid(outputLayer)
+
+    dLoss_func = outputError
+    delta2 = dLoss_func * dSigmoid(outputLayer)
+    chain2 = hiddenLayer.T.dot(delta2)
+
     hiddenError = delta2.dot(weight2.T)
-    delta1 = hiddenError * grad_sigmoid(hiddenLayer)
+    delta1 = hiddenError * dSigmoid(hiddenLayer)
+    chain1 = inputLayer.T.dot(delta1)
     #print ("Err: " + str(rms()) + "Iter: " + str(i))
 
 def adjust_weight():
     global weight2, weight1
-    weight2 += hiddenLayer.T.dot(delta2)
-    weight1 += inputLayer.T.dot(delta1)
+    weight2 += alpha * chain2
+    weight1 += alpha * chain1
 
 def predict(data, outputTest):
     inputTest = data
@@ -64,9 +93,10 @@ def predict(data, outputTest):
     print(output)
 
 def trainer():
+    #batch
     i = 1
     while i < epoch:
-        feed_forward(inputDataset)
+        activate(inputDataset)
         propagate()
         print ("Err: " + str(rms()) + ", Iter: " + str(i))
         adjust_weight()
@@ -79,11 +109,12 @@ def save_weights():
     np.save("./export_weights/weight2.npy", weight2)
 
 
+
 def main():
     # Training :
     trainer()
     # test / predict:
-    predict(data_test[2]["input"], data_test[2]["output"])
+    predict(data_test[4]["input"], data_test[4]["output"])
 
 if __name__ == "__main__":
     main()
