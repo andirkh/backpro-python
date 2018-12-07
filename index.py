@@ -16,8 +16,8 @@ for i in range(len(data)):
     outputDataset = np.append(outputDataset, np.array([data[i]["output"]]), axis=0)
 
 # params :
-alpha= 0.25
 epoch = 20000
+learn_rate = 0.5
 target_error = 0.0013
 neurons = 16
 inputLen = 625      #atau inputDataset.shape[1]
@@ -41,7 +41,7 @@ def dRelu(x):
     x[x>0] = 1
     return x
 
-# cost function
+# cost:
 def rms():
     global error_rms
     error_rms = np.sqrt(np.mean(np.square(outputError)))
@@ -82,8 +82,8 @@ def propagate():
 
 def adjust_weight():
     global weight2, weight1
-    weight2 += alpha * chain2
-    weight1 += alpha * chain1
+    weight2 += learn_rate * chain2
+    weight1 += learn_rate * chain1
 
 def predict(data, outputTest):
     inputTest = data
